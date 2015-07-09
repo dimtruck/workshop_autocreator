@@ -1,0 +1,79 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Orchestrates the entire process of validating upstream patch.
+artifactNumToKeep: 10
+numOfJobsToKeep: 15
+daysToKeep: 30
+buildParams:
+  - paramName: PublicRepo
+    paramValue: "https://github.com/stackforge/solum.git"
+    paramDesc:  Public repository (Openstack)
+    paramType: string
+  - paramName: PublicRepoBranch
+    paramValue: "master"
+    paramDesc:  "Public repository branch (Openstack/master)"
+    paramType: string
+  - paramName: PrivateRepo
+    paramValue: "ssh://git@github.com/rackerlabs/arbor.git"
+    paramDesc:  Private repository (Solum specific)
+    paramType: string
+  - paramName: PrivateRepoBranch
+    paramValue: "upstream"
+    paramDesc:  "Private repository branch to push to (Solum specific)"
+    paramType: string
+  - paramName: MergeRepo
+    paramValue: "ssh://git@github.com/rackerlabs/arbor-build.git"
+    paramDesc:  "Repository that contains a list of downstream patches"
+    paramType: string
+  - paramName: MergeRepoBranch
+    paramValue: "master"
+    paramDesc:  "Repository branch that contains a list of downstream patches"
+    paramType: string
+  - paramName: Milestone
+    paramValue: "k1"
+    paramDesc:  "Upstream release milestone (eg. &quot;j1&quot; for milestone juno 1). (Openstack)"
+    paramType: string
+  - paramName: OpenstackVersion
+    paramValue: "2015"
+    paramDesc:  "Openstack or Stackforge version (eg. &quot;2014&quot;). (Openstack)"
+    paramType: string
+githubProject: "https://github.com/rackerlabs/arbor"
+scm:
+  gitURL: "ssh://raxpaasci@review.openstack.org:29418/stackforge/solum"
+  gitBranch: "<%text>$GERRIT_REFSPEC</%text>"
+  refSpec: "+refs/pull/*:refs/remotes/origin/pr/*"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions:
+    cleanbeforecheckout: True
+triggers:
+  gerrit:
+    compareType: "PLAIN"
+    pattern: "stackforge/solum"
+    branch_pattern: "master"
+    commentAddedCommentContains: "recheck.*"
+
+dsl: |
+     <%text>
+     gerrit_fetch = build(params, &quot;upstream_gerrit_patch_fetch&quot;)
+     gerrit_fetch_branch = gerrit_fetch.environment.get(&quot;gerrit_rackerlabs_branch&quot;)
+     flow_step = "upstream fetch"
+     guard {
+      build_branch = gerrit_fetch.environment.get(&quot;build_branch&quot;)
+      private_build = build(UpstreamBranch: gerrit_fetch_branch, MergeRepoBranch: build_branch, &quot;upstream_build&quot;)
+      flow_step = "building"
+      branch = private_build.environment.get(&quot;BUILD_NAME&quot;)
+      sha1 = private_build.environment.get(&quot;SHA1&quot;)
+      unit_tests = build(&quot;upstream_unit_tests&quot;, BranchName: branch)
+      flow_step = "unit testing"
+      parallel ([
+        { build(&quot;upstream_functional_tests&quot;, sha1: sha1, BranchName: branch, TestBranchName:params.get(&quot;GERRIT_CHANGE_NUMBER&quot;)) },
+        { flow_step = "Functional testing" }
+      ])
+      flow_step="passed"
+     } rescue {
+      email_params = params + [FlowStep: flow_step, FlowURL: build.environment.get("BUILD_URL"), FlowBuildNum: build.environment.get("BUILD_DISPLAY_NAME")]
+      build(email_params, &quot;upstream_gerrit_emailer&quot;)
+      build(&quot;upstream_cleanup&quot;, BranchName: branch, UpstreamBranchName: gerrit_fetch_branch)
+     }
+     </%text>

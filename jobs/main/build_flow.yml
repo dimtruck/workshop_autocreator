@@ -1,0 +1,77 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Orchestrates the entire process of creating a snapshot artifact and updating internal master.
+artifactNumToKeep: 10
+numOfJobsToKeep: 10
+daysToKeep: 10
+buildParams:
+  - paramName: PublicRepo
+    paramValue: "https://github.com/stackforge/solum.git"
+    paramDesc:  Public repository (Openstack)
+    paramType: string
+  - paramName: PublicRepoBranch
+    paramValue: "master"
+    paramDesc:  "Public repository branch (Openstack/master)"
+    paramType: string  
+  - paramName: PrivateRepo
+    paramValue: "ssh://git@github.com/rackerlabs/arbor.git"
+    paramDesc:  Private repository (Solum specific)
+    paramType: string
+  - paramName: PrivateRepoBranch
+    paramValue: "upstream"
+    paramDesc:  "Private repository branch to push to (Solum specific)"
+    paramType: string
+  - paramName: MergeRepo
+    paramValue: "ssh://git@github.com/rackerlabs/arbor-build.git"
+    paramDesc:  "Repository that contains a list of downstream patches"
+    paramType: string
+  - paramName: MergeRepoBranch
+    paramValue: "master"
+    paramDesc:  "Repository branch that contains a list of downstream patches"
+    paramType: string
+  - paramName: Milestone
+    paramValue: "k1"
+    paramDesc:  "Upstream release milestone (eg. &quot;j1&quot; for milestone juno 1). (Openstack)"
+    paramType: string
+  - paramName: OpenstackVersion
+    paramValue: "2015"
+    paramDesc:  "Openstack or Stackforge version (eg. &quot;2014&quot;). (Openstack)"
+    paramType: string
+scm:
+  gitURL: "<%text>${MergeRepo}</%text>"
+  gitBranch: "<%text>${MergeRepoBranch}</%text>"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions: 
+    branch: "<%text>${MergeRepoBranch}</%text>"
+    cleanbeforecheckout: True
+triggers: 
+  timer: "@midnight"
+dsl: |
+     <%text>
+     pull_from_upstream = build(params, &quot;main_public_upstream_merge&quot;)
+     private_build = build(params, &quot;main_build&quot;)
+     branch = private_build.environment.get(&quot;BUILD_NAME&quot;)
+     sha1 = private_build.environment.get(&quot;SHA1&quot;)
+
+     guard {
+      unit_tests = build(&quot;main_unit_tests&quot;, BranchName: branch)
+      ignore(FAILURE) {
+        build(&quot;main_security_tests&quot;, BranchName: branch)
+      }
+      parallel ([
+        functional_tests:  { build(&quot;main_cloudcafe_tests&quot;, sha1: sha1, BranchName: branch) },
+        performance_tests_1:  { build(&quot;main_performance_tests&quot;, sha1: sha1, BranchName: branch, NumberOfWorkers: 10, NumberOfDeployers: 10, NumberOfNodes: 2, Host: 'b3283520c90fe0a3d85f468c714a8e90b2469629.rackspaceclouddb.com') }
+      ])
+      parallel (
+        { build(&quot;main_snapshot_deployer&quot;, BranchName: branch) },
+        { build(&quot;main_sonar&quot;, sha1: sha1, BranchName: branch) }
+      )
+      parallel (
+        { build(&quot;main_test_deployer&quot;, sha1: sha1, BranchName: branch) },
+        { build(&quot;main_security_deployer&quot;, sha1: sha1, BranchName: branch) }
+      )
+     } rescue {
+      build( &quot;main_cleanup&quot;, sha1: sha1, BranchName: branch )
+     }
+     </%text>

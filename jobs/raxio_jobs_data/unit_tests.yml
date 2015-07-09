@@ -1,0 +1,35 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Unit tests and code analysis
+numOfJobsToKeep: 10
+daysToKeep: 7
+buildParams:
+  - paramName: BranchName
+    paramValue: "Temporary branch name in internal repository"
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+  - paramName: BranchName
+    paramValue: "Temporary branch name in internal repository"
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/dimtruck/raxio-cd-demo.git"
+  gitBranch: "<%text>${BranchName}</%text>"
+  extensions: 
+    cleanbeforecheckout: True
+blockOnUpstream: True    
+virtualenvBuilder:
+  command: |
+           pip install -rtest-requirements.txt
+           pip install -rrequirements.txt
+           pip install -rtest-requirements.txt
+           pip install -U pytest
+           pip install pep8
+           py.test . --junitxml=results.xml
+           ./unit_tests.sh 
+junitArchiver:
+  testResults: results.xml
+  keepLongStdio: False
+rubyProxyObject:
+  pipList: "tox&lt;1.7"

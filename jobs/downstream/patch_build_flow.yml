@@ -1,0 +1,37 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Orchestrates the entire process of validating downstream patch
+artifactNumToKeep: 10
+numOfJobsToKeep: 10
+daysToKeep: 10
+githubProject: "https://github.com/rackerlabs/arbor"
+scm:
+  gitURL: "ssh://git@github.com/rackerlabs/arbor"
+  gitBranch: "<%text>${sha1}</%text>"
+  refSpec: "+refs/pull/*:refs/remotes/origin/pr/*"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions:
+    cleanbeforecheckout: True
+triggers:
+  github_pr:
+    spec: "H/5 * * * *"
+    adminlist: "dimtruck melissa-kam"
+    orglist: rackerlabs
+    cron: "H/5 * * * *"
+    triggerPhrase: recheck
+    useGitHubHooks: True
+    whitelist: dimtruck
+dsl: |
+     build(&quot;downstream_unit_tests&quot;, BranchName: params.get("ghprbActualCommit"))
+
+     parallel ([
+       functional_tests:  { build(&quot;downstream_functional_tests&quot;, sha1: params.get("ghprbActualCommit"), BranchName: params.get("ghprbActualCommit")) },
+       performance_tests:  { build(&quot;downstream_performance_tests&quot;, sha1: params.get("ghprbActualCommit"), BranchName: params.get("ghprbActualCommit")) }
+     ])
+extendedMailer:
+  recipientList: "$DEFAULT_RECIPIENTS"
+  subject: "PR - $PROJECT_DEFAULT_SUBJECT"
+  body: "$PROJECT_DEFAULT_CONTENT"
+  defaultSubject: "$DEFAULT_SUBJECT"
+  defaultContent: "$DEFAULT_CONTENT"

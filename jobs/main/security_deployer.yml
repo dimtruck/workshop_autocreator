@@ -1,0 +1,30 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Deployment to security environment
+artifactNumToKeep: 10
+scm:
+  gitURL: "ssh://git@github.com/rackerlabs/solum-ansible.git"
+  gitBranch: "*/master"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions: 
+    cleanbeforecheckout: True
+virtualenvBuilder:
+  command: |
+           <%text>#!/bin/bash
+           pip install -r ~/ansible-requirements.txt
+           . ~/.profile
+           export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
+           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes'
+
+           python ~/dev_setup_arbor_version.py roles/deploy/files/solum_override_attributes.json master git None
+
+           ansible-playbook deploy.yml -i inventory/security/ \
+           --tags "remove-single-deployer-lb,single-deployer,map-b-dns,setup_chef,operator-lp-blue" \
+           --private-key ~/.ssh/id_rsa \
+           --extra-vars "b_subdomain=security-api.cicd.rs-paas.com b_subdomain_record=security-api.cicd.rs-paas.com region=DFW group_environ=security" -vvvv
+           </%text>
+junitArchiver:
+  testResults: "**/results.xml"
+  keepLongStdio: False
+  healthScaleFactor: "1.0"

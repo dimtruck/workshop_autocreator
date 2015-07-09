@@ -1,0 +1,28 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Unit tests and code analysis
+numOfJobsToKeep: 15
+daysToKeep: 30
+buildParams:
+  - paramName: BranchName
+    paramValue: ""
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/rackerlabs/arbor.git"
+  gitBranch: "<%text>${BranchName}</%text>"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions: 
+    cleanbeforecheckout: True
+blockOnUpstream: True    
+virtualenvBuilder:
+  command: |
+           grunt test
+junitArchiver:
+  testResults: results.xml
+  keepLongStdio: False
+  healthScaleFactor: "1.0"
+rubyProxyObject:
+  pipList: "tox&lt;1.7"
+  version: 2.7.6

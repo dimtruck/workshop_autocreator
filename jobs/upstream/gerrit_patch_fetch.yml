@@ -1,0 +1,59 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Pulls down public code (OpenStack master) to upstream branch of private repository.
+artifactNumToKeep: 10
+buildParams:
+  - paramName: GerritRepo
+    paramValue: "ssh://raxpaasci@review.openstack.org:29418/stackforge/solum"
+    paramDesc:  Gerrit Solum repository
+    paramType: string
+  - paramName: GERRIT_REFSPEC
+    paramValue: ""
+    paramDesc:  "Gerrit ref, e.g., refs/changes/81/181181/3"
+    paramType: string
+  - paramName: GERRIT_CHANGE_NUMBER
+    paramValue: ""
+    paramDesc:  "Gerrit change number found in URL of review, e.g., 196498"
+    paramType: string
+  - paramName: NewGerritPatchBranch
+    paramValue: ""
+    paramDesc:  "Name of branch to create on Arbor repo. Defaults to Gerrit ref."
+    paramType: string
+scm:
+  gitURL: "<%text>${GerritRepo}</%text>"
+  gitBranch: "<%text>$GERRIT_REFSPEC</%text>"
+  refSpec: "refs/changes/*:refs/changes/* "
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+shell_build_command:
+  - build: |
+           <%text>#!/bin/bash
+           # Set up a build branch for Arbor-Build to use
+           if [ -z $NewGerritPatchBranch ]; then
+               gerrit_rackerlabs_branch="${GERRIT_REFSPEC//\//-}"
+           else
+               gerrit_rackerlabs_branch="${NewGerritPatchBranch}"
+           fi
+
+           git remote add rackerlabs ssh://git@github.com/rackerlabs/arbor.git
+           git fetch rackerlabs -a
+           git branch -D rackerlabs/$gerrit_rackerlabs_branch || echo "Creating branch: $gerrit_rackerlabs_branch"
+           git checkout -b $gerrit_rackerlabs_branch
+           git push rackerlabs $gerrit_rackerlabs_branch -f
+           echo "gerrit_rackerlabs_branch=$gerrit_rackerlabs_branch" > gerrit_rackerlabs_branch.txt
+
+           rm -rf arbor-build
+           git clone git@github.com:rackerlabs/arbor-build.git
+           cd arbor-build
+           git rev-parse --verify origin/$GERRIT_CHANGE_NUMBER
+           if [ $? -eq 0 ]; then
+               build_branch=$GERRIT_CHANGE_NUMBER
+           else
+               build_branch="master"
+           fi
+           cd ..
+           echo "Using arbor-build branch: $build_branch"
+           echo "build_branch=$build_branch" >> gerrit_rackerlabs_branch.txt
+
+           </%text>
+envInjectBuilder: gerrit_rackerlabs_branch.txt

@@ -1,0 +1,58 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Sonar results aggregator
+numOfJobsToKeep: 10
+daysToKeep: 7
+buildParams:
+  - paramName: BranchName
+    paramValue: "Temporary branch name in internal repository"
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/dimtruck/raxio-cd-demo.git"
+  gitBranch: "<%text>${BranchName}</%text>"
+  extensions: 
+    cleanbeforecheckout: True
+jdk: "(Inherit From Job)"    
+virtualenvBuilder:
+  command: |
+           pip install -rrequirements.txt
+           pip install -rtest-requirements.txt
+           pip install -U nose
+           pip install pep8
+           pip install -U coverage
+           python app.py &amp;
+           pid=$!
+           nosetests functionaltests/ -v --all-modules --with-xunit --with-coverage --cover-xml
+           kill -9 $pid
+sonarBuilder:
+  properties: |
+              # required metadata
+              sonar.projectKey=demo:raxio2015
+              sonar.projectName=RaxIO2015
+              sonar.projectVersion=1.0
+
+              # path to source directories (required)
+              sonar.sources=.
+
+              # path to test source directories (optional)
+              # sonar.tests=testDir1,testDir2
+
+              # path to project binaries (optional), for example directory of Java bytecode
+              # sonar.binaries=binDir
+
+              # Uncomment this line to analyse a project which is not a java project.
+              # The value of the property must be the key of the language.
+              sonar.language=py
+              sonar.sourceEncoding=UTF-8
+              sonar.python.coverage.reportPath=coverage.xml
+              sonar.python.xunit.reportPath=nosetests.xml
+              #sonar.python.xunit.itReportPath=it-pytests.xml
+              #sonar.python.coverage.itReportPath=it-coverage.xml
+
+              # Flake8 Configuration
+              # sonar.python.flake8_config=tox.ini
+  jdk:  "(Inherit From Job)"              
+rubyProxyObject:
+  pipList: "tox&lt;1.7"

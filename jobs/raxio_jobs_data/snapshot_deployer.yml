@@ -1,0 +1,28 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Deploys snapshot artifact to cloud files
+numOfJobsToKeep: 10
+daysToKeep: 7
+buildParams:
+  - paramName: BranchName
+    paramValue: "Temporary branch name in internal repository"
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/dimtruck/raxio-cd-demo.git"
+  gitBranch: "<%text>${BranchName}</%text>"
+  extensions: 
+    cleanbeforecheckout: True
+shell_build_command: 
+  - build: |
+           <%text>#!/bin/bash
+           . ~/.profile
+           git fetch -a
+           git checkout ${BranchName}
+           git push origin ${BranchName}:master -f</%text>
+  - build: |
+           <%text>#!/bin/bash
+           # logic to deploy code to cloud files
+           . ~/.profile
+           </%text>

@@ -1,0 +1,86 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Deploys snapshot artifact to cloud files
+numOfJobsToKeep: 10
+daysToKeep: 7
+buildParams:
+  - paramName: BranchName
+    paramValue: ""
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/rackerlabs/arbor.git"
+  gitBranch: "<%text>${BranchName}</%text>"
+  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
+  extensions: 
+    cleanbeforecheckout: True
+shell_build_command: 
+  - build: |
+           <%text>#!/bin/bash
+           . ~/.profile
+           git fetch -a
+           git checkout ${BranchName}
+           git push origin ${BranchName}:master -f</%text>
+  - build: |
+           <%text>#!/bin/bash
+           # logic to deploy code to cloud files
+           . ~/.profile
+           rm -rf arbor-master
+           virtualenv arbor-master
+           rm -rf arbor-master/source
+           mkdir -p arbor-master/source
+           cp -R contrib coverage.sh doc etc examples functionaltests HACKING.rst LICENSE MANIFEST.in \
+           openstack-common.conf README.rst requirements.txt setup.cfg setup.py solum test-requirements.txt \
+           tools tox.ini -t arbor-master/source/
+           . arbor-master/bin/activate
+           pip install -r test-requirements.txt
+           pip install -r requirements.txt
+           pip install .
+           OUTPUT="$(pip freeze | grep librabbitmq)"
+           pip freeze > requirements.txt
+           if [ -z ${OUTPUT} ]; then echo "librabbitmq not found"; else pip uninstall librabbitmq; fi
+           virtualenv --relocatable arbor-master
+           tar czvf arbor-master.tar.gz arbor-master/
+           deactivate
+
+           # clone solum-ansible playbook and add to push-to-files-release playbook
+           rm -rf solum-ansible
+           mkdir -p solum-ansible
+           cd solum-ansible
+           git init
+           git pull ssh://git@github.com/rackerlabs/solum-ansible.git
+           git remote add origin ssh://git@github.com/rackerlabs/solum-ansible.git
+           git fetch -a
+           git checkout master
+           git pull origin master
+           cd ..
+           </%text>
+virtualenvBuilder:
+  command: |
+           <%text>#!/bin/bash
+           pip install -r ~/ansible-requirements.txt
+           . ~/.profile
+           export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
+           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes'
+           
+           ansible-playbook solum-ansible/push-to-files-release.yml -i solum-ansible/inventory/cloudcafe/ --extra-vars "name=/home/jenkins/workspace/arbor_snapshot_deployer/arbor-master.tar.gz" -vvvv
+
+           </%text>
+extendedMailer:
+  recipientList: "paasteam-dev@lists.rackspace.com"
+  defaultSubject: "Snapshot Artifact Deployed"
+  defaultContent: |
+                  <%text>
+                  Arbor artifact created and uploaded to cloud files.
+
+                  Changelog: https://github.com/rackerlabs/arbor/blob/master/changelog
+                  </%text>
+  success:
+    subject: "Snapshot Artifact Deployed"
+    body: |
+          <%text>
+          Arbor artifact created and uploaded to cloud files.
+
+          Changelog: https://github.com/rackerlabs/arbor/blob/master/changelog
+          </%text>
