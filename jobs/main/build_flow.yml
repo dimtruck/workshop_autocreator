@@ -15,7 +15,7 @@ buildParams:
     paramDesc:  "Public repository branch (Openstack/master)"
     paramType: string  
   - paramName: PrivateRepo
-    paramValue: "https://github.com/dimtruck/workshop_demo"
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
     paramDesc:  Private repository (Solum specific)
     paramType: string
   - paramName: PrivateRepoBranch
