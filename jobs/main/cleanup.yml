@@ -6,13 +6,18 @@ numOfJobsToKeep: 10
 daysToKeep: 7
 buildParams:
   - paramName: BranchName
-    paramValue: "Temporary branch name in internal repository"
+    paramValue: ""
     paramDesc:  "Temporary branch name in internal repository"
     paramType: string
+  - paramName: PrivateRepo
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
+    paramDesc:  Private repository (Solum specific)
+    paramType: string
 scm:
-  gitURL: "ssh://git@github.com/dimtruck/raxio-cd-demo.git"
+  gitURL: "<%text>${PrivateRepo}</%text>"
   gitBranch: "<%text>${BranchName}</%text>"
   extensions: 
+    branch: "<%text>${BranchName}</%text>"
     cleanbeforecheckout: True
 shell_build_command: 
   - build: |
