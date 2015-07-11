@@ -7,7 +7,7 @@ numOfJobsToKeep: 10
 daysToKeep: 10
 buildParams:
   - paramName: PublicRepo
-    paramValue: "https://github.com/stackforge/solum.git"
+    paramValue: "https://github.com/Rax-io-CI-CD/workshop_demo"
     paramDesc:  Public repository (Openstack)
     paramType: string
   - paramName: PublicRepoBranch
@@ -15,7 +15,7 @@ buildParams:
     paramDesc:  "Public repository branch (Openstack/master)"
     paramType: string  
   - paramName: PrivateRepo
-    paramValue: "ssh://git@github.com/rackerlabs/arbor.git"
+    paramValue: "https://github.com/dimtruck/workshop_demo"
     paramDesc:  Private repository (Solum specific)
     paramType: string
   - paramName: PrivateRepoBranch
@@ -23,7 +23,7 @@ buildParams:
     paramDesc:  "Private repository branch to push to (Solum specific)"
     paramType: string
   - paramName: MergeRepo
-    paramValue: "ssh://git@github.com/rackerlabs/arbor-build.git"
+    paramValue: "https://github.com/dimtruck/workshop_build"
     paramDesc:  "Repository that contains a list of downstream patches"
     paramType: string
   - paramName: MergeRepoBranch
@@ -41,7 +41,6 @@ buildParams:
 scm:
   gitURL: "<%text>${MergeRepo}</%text>"
   gitBranch: "<%text>${MergeRepoBranch}</%text>"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
     branch: "<%text>${MergeRepoBranch}</%text>"
     cleanbeforecheckout: True

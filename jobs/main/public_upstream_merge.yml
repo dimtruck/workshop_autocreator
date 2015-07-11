@@ -20,9 +20,20 @@ buildParams:
     paramValue: "upstream"
     paramDesc:  "Private repository branch to push to (Company specific)"
     paramType: string
+  - paramName: MergeRepo
+    paramValue: "https://github.com/dimtruck/workshop_build"
+    paramDesc:  "Repository that contains a list of downstream patches"
+    paramType: string
+  - paramName: MergeRepoBranch
+    paramValue: "master"
+    paramDesc:  "Repository branch that contains a list of downstream patches"
+    paramType: string
 scm:
-  gitURL: "https://github.com/Rax-io-CI-CD/Rax-io-build.git"
-  gitBranch: "*/master"
+  gitURL: "<%text>${MergeRepo}</%text>"
+  gitBranch: "<%text>${MergeRepoBranch}</%text>"
+  extensions: 
+    branch: "<%text>${MergeRepoBranch}</%text>"
+    cleanbeforecheckout: True
 triggers: 
   timer: "@midnight"
 shell_build_command: 
@@ -64,12 +75,8 @@ shell_build_command:
            bool_args=&quot;$bool_args -e internal_repo/master&quot;
 
            cd ..
-           chmod u+x ~/public_upstream_merge.sh
-           ~/public_upstream_merge.sh -h $PublicRepoBranch -r $PublicRepo $bool_args -o ${BUILD_VARS} -i /var/lib/jenkins/.ssh/id_rsa
+           ./upstream-fetch -h $PublicRepoBranch -r $PublicRepo $bool_args -o ${BUILD_VARS} -i /var/lib/jenkins/.ssh/id_rsa
 
            deactivate</%text>
 aggregatedTestResults:
   failedBuilds: "true"
-buildTrigger:
-  projects: "raxio_jobs_data_master_build_flow"
-  triggerCondition: SUCCESS
