@@ -6,37 +6,16 @@ numOfJobsToKeep: 10
 daysToKeep: 7
 buildParams:
   - paramName: BranchName
-    paramValue: "master"
+    paramValue: ""
     paramDesc:  "Temporary branch name in internal repository"
     paramType: string
-  - paramName: NumberOfWorkers
-    paramValue: 10
-    paramDesc:  "Number of workers per node"
-    paramType: string
-  - paramName: NumberOfDeployers
-    paramValue: 10
-    paramDesc:  "Number of deployers per node"
-    paramType: string
-  - paramName: NumberOfNodes
-    paramValue: 1
-    paramDesc:  "Number of nodes"
-    paramType: string
-  - paramName: UserFile
-    paramValue: "python-java-operator.csv"
-    paramDesc:  "User credentials file"
-    paramType: string
-  - paramName: PropertiesFile
-    paramValue: "1-hour-20-users.properties"
-    paramDesc:  "Test properties file"
-    paramType: string
-  - paramName: Host
-    paramValue: ""
-    paramDesc: "Database host"
+  - paramName: PrivateRepo
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
+    paramDesc:  Private repository (Solum specific)
     paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/solum-ansible.git"
+  gitURL: "https://github.com/dimtruck/workshop_deployment"
   gitBranch: "*/master"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
     cleanbeforecheckout: True
 virtualenvBuilder:
@@ -47,11 +26,15 @@ virtualenvBuilder:
            export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
            ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes'
 
-           # update solum_override_attributes.json
-           python ~/dev_setup_arbor_version.py roles/deploy/files/solum_override_attributes.json ${BranchName} git None
            ansible-playbook deploy.yml -i inventory/performance/ \
-           --tags "single-deployer,setup_chef,map-b-dns,operator-lp-blue,test-single-deployer,clean-up-single-deployer" \
+           --tags "blue-nodes,blue-lb,deploy,purge" \
            --private-key ~/.ssh/id_rsa \
-           --extra-vars "b_subdomain=${BranchName}-performance-api.cicd.rs-paas.com b_subdomain_record=${BranchName}-performance-api.cicd.rs-paas.com region=DFW group_environ=${BranchName}-cloudcafe branch=${TestBranchName} test_suite=${TestSuite}"
+           --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-performance"
+
            </%text>
+shell_build_command: 
+  - build: |
+           #!/bin/bash
+           # run gatling here
+
 gatlingPublisher: True  

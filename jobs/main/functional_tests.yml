@@ -32,6 +32,10 @@ virtualenvBuilder:
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
 
            </%text>
+shell_build_command: 
+  - build: |
+           #!/bin/bash
+           # run selenium here
 junitArchiver:
   testResults: "**/results.xml"
   keepLongStdio: False
