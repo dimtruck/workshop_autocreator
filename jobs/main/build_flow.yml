@@ -54,9 +54,9 @@ dsl: |
      sha1 = private_build.environment.get(&quot;SHA1&quot;)
 
      guard {
-      unit_tests = build(&quot;main_unit_tests&quot;, BranchName: branch)
+      unit_tests = build(params, &quot;main_unit_tests&quot;, BranchName: branch)
       ignore(FAILURE) {
-        build(&quot;main_security_tests&quot;, BranchName: branch)
+        build(params, &quot;main_security_tests&quot;, BranchName: branch)
       }
       parallel ([
         functional_tests:  { build(&quot;main_cloudcafe_tests&quot;, sha1: sha1, BranchName: branch) },

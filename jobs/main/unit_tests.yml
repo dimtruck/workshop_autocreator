@@ -9,20 +9,21 @@ buildParams:
     paramValue: ""
     paramDesc:  "Temporary branch name in internal repository"
     paramType: string
+  - paramName: PrivateRepo
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
+    paramDesc:  Private repository (Solum specific)
+    paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/arbor.git"
+  gitURL: "<%text>${PrivateRepo}</%text>"
   gitBranch: "<%text>${BranchName}</%text>"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
+    branch: "<%text>${BranchName}</%text>"
     cleanbeforecheckout: True
-blockOnUpstream: True    
-virtualenvBuilder:
-  command: |
+shell_build_command: 
+  - build: |
+           #!/bin/bash
            grunt test
 junitArchiver:
   testResults: results.xml
   keepLongStdio: False
   healthScaleFactor: "1.0"
-rubyProxyObject:
-  pipList: "tox&lt;1.7"
-  version: 2.7.6

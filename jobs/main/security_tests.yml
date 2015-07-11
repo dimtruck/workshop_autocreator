@@ -7,37 +7,15 @@ daysToKeep: 30
 buildParams:
   - paramName: BranchName
     paramValue: ""
-    paramDesc:  "Branch name in Arbor to test against"
+    paramDesc:  "Temporary branch name in internal repository"
+    paramType: string
+  - paramName: PrivateRepo
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
+    paramDesc:  Private repository (Solum specific)
     paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/arbor.git"
+  gitURL: "<%text>${PrivateRepo}</%text>"
   gitBranch: "<%text>${BranchName}</%text>"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
+    branch: "<%text>${BranchName}</%text>"
     cleanbeforecheckout: True
-virtualenvBuilder:
-  command: |
-           <%text>#!/bin/bash
-           rm -rf bandit
-           git clone https://github.com/stackforge/bandit
-           cd bandit
-           python setup.py install
-           pip install six --upgrade
-           cd ..
-           bandit -c ~/bandit.yaml -f xml  -n 10 -r .
-           </%text>
-junitArchiver:
-  testResults: "bandit_results.xml"
-  keepLongStdio: False
-  healthScaleFactor: "0.0"
-extendedMailer:
-  recipientList: "michael.xin@rackspace.com,matthew.valdes@RACKSPACE.COM,paasteam-dev@lists.rackspace.com"
-  defaultSubject: <%text>Arbor - Static security analysis - $BUILD_TAG</%text>
-  defaultContent: <%text>Attached is the security analysis for Arbor $BUILD_URL</%text>
-  attachBuildLog: false
-  success:
-    subject: $PROJECT_DEFAULT_SUBJECT
-    body: $PROJECT_DEFAULT_CONTENT
-  unstable:
-    subject: $PROJECT_DEFAULT_SUBJECT
-    body: $PROJECT_DEFAULT_CONTENT
