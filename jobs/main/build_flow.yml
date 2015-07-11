@@ -32,11 +32,11 @@ buildParams:
     paramType: string
   - paramName: Milestone
     paramValue: "k1"
-    paramDesc:  "Upstream release milestone (eg. "j1" for milestone juno 1). (Openstack)"
+    paramDesc:  "Upstream release milestone (eg. j1 for milestone juno 1). (Openstack)"
     paramType: string
   - paramName: OpenstackVersion
     paramValue: "2015"
-    paramDesc:  "Openstack or Stackforge version (eg. "2014"). (Openstack)"
+    paramDesc:  "Openstack or Stackforge version (eg. 2015). (Openstack)"
     paramType: string
 scm:
   gitURL: "<%text>${MergeRepo}</%text>"
