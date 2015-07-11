@@ -34,7 +34,7 @@ virtualenvBuilder:
            export RAX_CREDS_FILE=~/.raxpub
 
            ansible-playbook deploy.yml -i inventory/functional/ \
-           --tags "blue-nodes,blue-lb,deploy,purge" \
+           --tags "ephemeral-nodes,ephemeral-lb,deploy,purge" \
            --private-key ~/.ssh/id_rsa \
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
 
