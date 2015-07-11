@@ -54,17 +54,17 @@ dsl: |
      sha1 = private_build.environment.get(&quot;SHA1&quot;)
 
      guard {
-      unit_tests = build(params, &quot;main_unit_tests&quot;, BranchName: branch)
+      unit_tests = build(&quot;main_unit_tests&quot;, BranchName: branch, PrivateRepo: ${PrivateRepo})
       ignore(FAILURE) {
-        build(params, &quot;main_security_tests&quot;, BranchName: branch)
+        build(&quot;main_security_tests&quot;, BranchName: branch, PrivateRepo: ${PrivateRepo})
       }
       parallel ([
-        functional_tests:  { build(&quot;main_cloudcafe_tests&quot;, sha1: sha1, BranchName: branch) },
-        performance_tests_1:  { build(&quot;main_performance_tests&quot;, sha1: sha1, BranchName: branch, NumberOfWorkers: 10, NumberOfDeployers: 10, NumberOfNodes: 2, Host: 'b3283520c90fe0a3d85f468c714a8e90b2469629.rackspaceclouddb.com') }
+        functional_tests:  { build(&quot;main_cloudcafe_tests&quot;, BranchName: branch, PrivateRepo: ${PrivateRepo}) },
+        performance_tests_1:  { build(&quot;main_performance_tests&quot;, BranchName: branch, PrivateRepo: ${PrivateRepo}) }
       ])
       parallel (
-        { build(&quot;main_snapshot_deployer&quot;, BranchName: branch) },
-        { build(&quot;main_sonar&quot;, sha1: sha1, BranchName: branch) }
+        { build(&quot;main_snapshot_deployer&quot;, BranchName: branch, PrivateRepo: ${PrivateRepo}) },
+        { build(&quot;main_sonar&quot;, sha1: sha1, BranchName: branch, PrivateRepo: ${PrivateRepo}) }
       )
       parallel (
         { build(&quot;main_test_deployer&quot;, sha1: sha1, BranchName: branch) },
