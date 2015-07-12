@@ -38,13 +38,25 @@ virtualenvBuilder:
            --private-key ~/.ssh/id_rsa \
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
 
+           rm -rf repo
+           
+           git clone ${PrivateRepo} repo
+           cd repo
+           cp ../protractor.conf.js .
+          
            PATH=/var/lib/jenkins/npm_global/bin:$PATH
            npm install
            npm install karma
            npm install karma-coverage
            npm install karma-jenkins-reporter
+           npm install jasmine-reporters
            bower install
+           npm run update-webdriver
+           webdriver-manager update
+           webdriver-manager start > /dev/null 2>&1 &
            grunt test:e2e
+          
+           cd ..
 
            ansible-playbook deploy.yml -i inventory/functional/ \
            --tags "purge" \
