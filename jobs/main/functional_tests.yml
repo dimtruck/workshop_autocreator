@@ -65,5 +65,5 @@ virtualenvBuilder:
            
            </%text>
 junitArchiver:
-  testResults: "results.xml"
+  testResults: "junitresults.xml"
   keepLongStdio: False
