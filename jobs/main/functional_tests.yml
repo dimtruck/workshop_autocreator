@@ -34,15 +34,24 @@ virtualenvBuilder:
            export RAX_CREDS_FILE=~/.raxpub
 
            ansible-playbook deploy.yml -i inventory/functional/ \
-           --tags "ephemeral-nodes,ephemeral-lb,deploy,purge" \
+           --tags "ephemeral-nodes,ephemeral-lb,deploy,test-ephemeral" \
            --private-key ~/.ssh/id_rsa \
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
 
+           PATH=/var/lib/jenkins/npm_global/bin:$PATH
+           npm install
+           npm install karma
+           npm install karma-coverage
+           npm install karma-jenkins-reporter
+           bower install
+           grunt test:e2e
+
+           ansible-playbook deploy.yml -i inventory/functional/ \
+           --tags "purge" \
+           --private-key ~/.ssh/id_rsa \
+           --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
+           
            </%text>
-shell_build_command: 
-  - build: |
-           #!/bin/bash
-           # run selenium here
 junitArchiver:
-  testResults: "**/results.xml"
+  testResults: "results.xml"
   keepLongStdio: False
