@@ -53,7 +53,7 @@ virtualenvBuilder:
            bower install
            npm run update-webdriver
            webdriver-manager update
-           webdriver-manager start > /dev/null 2>&1 &
+           webdriver-manager start > /dev/null 2>${"&"}1 ${"&"}
            grunt test:e2e
           
            cd ..
@@ -62,7 +62,6 @@ virtualenvBuilder:
            --tags "purge" \
            --private-key ~/.ssh/id_rsa \
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
-           
            </%text>
 junitArchiver:
   testResults: "junitresults.xml"
