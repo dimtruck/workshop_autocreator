@@ -42,6 +42,7 @@ virtualenvBuilder:
            
            git clone ${PrivateRepo} repo
            cd repo
+           git checkout ${BranchName}
            cp ../protractor.conf.js .
           
            PATH=/var/lib/jenkins/npm_global/bin:$PATH
