@@ -64,5 +64,5 @@ virtualenvBuilder:
            --extra-vars "branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-functional"
            </%text>
 junitArchiver:
-  testResults: "junitresults.xml"
+  testResults: "repo/junitresults.xml"
   keepLongStdio: False

@@ -29,7 +29,3 @@ virtualenvBuilder:
            --private-key ~/.ssh/id_rsa \
            --extra-vars "branch=master repo=${PrivateRepo} group_environ=security"
            </%text>
-junitArchiver:
-  testResults: "**/results.xml"
-  keepLongStdio: False
-  healthScaleFactor: "1.0"
