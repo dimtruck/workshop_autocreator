@@ -53,7 +53,7 @@ virtualenvBuilder:
            bower install
            npm run update-webdriver
            webdriver-manager update
-           webdriver-manager start > /dev/null 2>${"&"}1 ${"&"}
+           webdriver-manager start > /dev/null 2>\&1 \&
            grunt test:e2e
           
            cd ..
