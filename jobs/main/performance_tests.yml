@@ -21,6 +21,13 @@ scm:
 virtualenvBuilder:
   command: |
            <%text>#!/bin/bash
+           rm -rf repo
+           
+           git clone ${PrivateRepo} repo
+           cd repo
+           git checkout ${BranchName}
+           cd ..
+
            pip install -r ansible-requirements.txt
            echo "127.0.0.1" > ~/ansible_hosts
 
@@ -32,7 +39,7 @@ virtualenvBuilder:
 
            RAX_CREDS_FILE="~/.raxpub ansible all -i inventory/ -m setup"
            export RAX_CREDS_FILE=~/.raxpub
-
+           
            ansible-playbook deploy.yml -i inventory/performance/ \
            --tags "ephemeral-nodes,ephemeral-lb,deploy,test-performance" \
            --private-key ~/.ssh/id_rsa \
