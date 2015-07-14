@@ -29,6 +29,9 @@ shell_build_command:
 virtualenvBuilder:
   command: |
            <%text>#!/bin/bash -x
+           rm -rf workshop_deployment
+           git clone https://github.com/dimtruck/workshop_deployment workshop_deployment
+           cd workshop_deployment
            pip install -r ansible-requirements.txt
            echo "127.0.0.1" > ~/ansible_hosts
 
