@@ -21,10 +21,10 @@ scm:
 virtualenvBuilder:
   command: |
            <%text>#!/bin/bash
-           rm -rf repo
+           rm -rf workshop
            
-           git clone ${PrivateRepo} repo
-           cd repo
+           git clone ${PrivateRepo} workshop
+           cd workshop
            git checkout ${BranchName}
            cd ..
 
@@ -43,7 +43,7 @@ virtualenvBuilder:
            ansible-playbook deploy.yml -i inventory/performance/ \
            --tags "ephemeral-nodes,ephemeral-lb,deploy,test-performance" \
            --private-key ~/.ssh/id_rsa \
-           --extra-vars "workspace=${WORKSPACE} branch=${BranchName} repo=${PrivateRepo} group_environ=${BranchName}-performance gatling_test_name=WorkshopTest.scala test_package=workshop durationInMinutes=10 throughput=100 rampUpUsers=2 rampUpDuration=10 maxResponseTime=1000 duration_with_wait=660"
+           --extra-vars "workspace=${WORKSPACE} branch=${BranchName} gatling_simulation=workshop.WorkshopTest repo=${PrivateRepo} group_environ=${BranchName}-performance gatling_test_name=WorkshopTest.scala test_package=workshop durationInMinutes=10 throughput=100 rampUpUsers=2 rampUpDuration=10 maxResponseTime=1000 duration_with_wait=660"
 
            #run gatling
            
