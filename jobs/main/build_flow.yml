@@ -48,29 +48,37 @@ triggers:
   timer: "@midnight"
 dsl: |
      <%text>
-     pull_from_upstream = build(params, &quot;main_public_upstream_merge&quot;)
-     private_build = build(params, &quot;main_build&quot;)
-     branch = private_build.environment.get(&quot;BUILD_NAME&quot;)
-     sha1 = private_build.environment.get(&quot;SHA1&quot;)
-
+     pull_from_upstream = build(params, "main_public_upstream_merge")
+     private_build = build(params, "main_build")
+     branch = private_build.environment.get("BUILD_NAME")
+     sha1 = private_build.environment.get("SHA1")
+     
      guard {
-      unit_tests = build(&quot;main_unit_tests&quot;, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;))
-      ignore(FAILURE) {
-        build(&quot;main_security_tests&quot;, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;))
-      }
-      parallel ([
-        functional_tests:  { build(&quot;main_functional_tests&quot;, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) },
-        performance_tests_1:  { build(&quot;main_performance_tests&quot;, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) }
-      ])
-      parallel (
-        { build(&quot;main_snapshot_deployer&quot;, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) },
-        { build(&quot;main_sonar&quot;, sha1: sha1, BranchName: branch, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) }
-      )
-      parallel (
-        { build(&quot;main_test_deployer&quot;, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) },
-        { build(&quot;main_security_deployer&quot;, PrivateRepo: params.get(&quot;PrivateRepo&quot;)) }
-      )
+       unit_tests = build("main_unit_tests", BranchName: branch, PrivateRepo: params.get("PrivateRepo"))
+       ignore(FAILURE) {
+         build("main_security_tests", BranchName: branch, PrivateRepo: params.get("PrivateRepo"))
+       }
+       parallel ([
+         functional_tests:  { 
+           retry ( 3 ) {
+             build("main_functional_tests", BranchName: branch, PrivateRepo: params.get("PrivateRepo"))
+           }
+         },
+         performance_tests_1:  { 
+           retry ( 3 ) {
+             build("main_performance_tests", BranchName: branch, PrivateRepo: params.get("PrivateRepo"))
+           }
+         }
+       ])
+       parallel (
+         { build("main_snapshot_deployer", BranchName: branch, PrivateRepo: params.get("PrivateRepo")) },
+         { build("main_sonar", sha1: sha1, BranchName: branch, PrivateRepo: params.get("PrivateRepo")) }
+       )
+       parallel (
+         { build("main_test_deployer", sha1: sha1, BranchName: branch) },
+         { build("main_security_deployer", sha1: sha1, BranchName: branch) }
+       )
      } rescue {
-      build( &quot;main_cleanup&quot;, sha1: sha1, BranchName: branch )
+       build( "main_cleanup", sha1: sha1, BranchName: branch )
      }
      </%text>
