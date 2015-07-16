@@ -3,10 +3,14 @@
 
 job_description: Deployment to security environment
 artifactNumToKeep: 10
+buildParams:
+  - paramName: PrivateRepo
+    paramValue: "git@github.com:dimtruck/workshop_demo.git"
+    paramDesc:  Private repository (Solum specific)
+    paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/solum-ansible.git"
+  gitURL: "https://github.com/dimtruck/workshop_deployment"
   gitBranch: "*/master"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
     cleanbeforecheckout: True
 virtualenvBuilder:
