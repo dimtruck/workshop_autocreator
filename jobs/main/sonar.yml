@@ -24,10 +24,9 @@ shell_build_command:
            #!/bin/bash
            PATH=/var/lib/jenkins/npm_global/bin:$PATH
            npm install
-           npm install karma
-           npm install karma-coverage
            npm install karma-jenkins-reporter
            bower install
+           #grunt sonarRunner:analysis
            grunt test
 sonarBuilder:
   properties: |
@@ -49,7 +48,7 @@ sonarBuilder:
               # The value of the property must be the key of the language.
               sonar.language=js
               sonar.sourceEncoding=UTF-8
-              sonar.javascript.jstestdriver.reportsPath=results.xml
+              sonar.javascript.jstestdriver.reportsPath=repo/junitresults.xml
   jdk:  "(Inherit From Job)"              
 rubyProxyObject:
   pipList: "tox&lt;1.7"
