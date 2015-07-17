@@ -38,6 +38,6 @@ dsl: |
          }
        ])
      } rescue {
-       build( "main_cleanup", sha1: params.get("ghprbActualCommit"), BranchName: params.get("ghprbActualCommit"))
+       build( "downstream_cleanup", sha1: params.get("ghprbActualCommit"), BranchName: params.get("ghprbActualCommit"))
      }
      </%text>
