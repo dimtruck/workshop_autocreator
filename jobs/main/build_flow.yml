@@ -75,8 +75,16 @@ dsl: |
          { build("main_sonar", sha1: sha1, BranchName: branch, PrivateRepo: params.get("PrivateRepo")) }
        )
        parallel (
-         { build("main_test_deployer", sha1: sha1, BranchName: branch) },
-         { build("main_security_deployer", sha1: sha1, BranchName: branch) }
+         { 
+           retry ( 3 ) {
+             build("main_test_deployer", sha1: sha1, BranchName: branch)
+           }
+         },
+         { 
+           retry ( 3 ) {
+             build("main_security_deployer", sha1: sha1, BranchName: branch)
+           }
+         }
        )
      } rescue {
        build( "main_cleanup", sha1: sha1, BranchName: branch )
