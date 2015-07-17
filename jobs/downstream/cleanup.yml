@@ -15,13 +15,6 @@ scm:
   extensions: 
     branch: "<%text>${BranchName}</%text>"
     cleanbeforecheckout: True
-shell_build_command: 
-  - build: |
-           <%text>#!/bin/bash
-           . ~/.profile
-           git checkout ${BranchName}
-           git checkout master
-           git push origin --delete ${BranchName}</%text>
 virtualenvBuilder:
   command: |
            <%text>#!/bin/bash -x
