@@ -48,7 +48,7 @@ sonarBuilder:
               # The value of the property must be the key of the language.
               sonar.language=js
               sonar.sourceEncoding=UTF-8
-              sonar.javascript.jstestdriver.reportsPath=repo/junitresults.xml
+              sonar.javascript.jstestdriver.reportsPath=junitresults.xml
   jdk:  "(Inherit From Job)"              
 rubyProxyObject:
   pipList: "tox&lt;1.7"

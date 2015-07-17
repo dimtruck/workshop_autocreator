@@ -18,27 +18,53 @@ buildParams:
     paramDesc:  "Test suite file name which specifies which tests to run"
     paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/solum-ansible.git"
+  gitURL: "https://github.com/dimtruck/workshop_deployment"
   gitBranch: "*/master"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
     cleanbeforecheckout: True
 virtualenvBuilder:
   command: |
-           <%text>#!/bin/bash
-           pip install -r ~/ansible-requirements.txt
-           . ~/.profile
+           <%text>#!/bin/bash -x
+           pip install -r ansible-requirements.txt
+           echo "127.0.0.1" > ~/ansible_hosts
+
+           export ANSIBLE_HOSTS=~/ansible_hosts
+           export ANSIBLE_LIBRARY=${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/core:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/extras:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/
+
            export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
-           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes'
+           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes -o ConnectTimeout=60'
 
-           # update solum_override_attributes.json
-           python ~/dev_setup_arbor_version.py roles/deploy/files/solum_override_attributes.json ${BranchName} git None
-           ansible-playbook deploy.yml -i inventory/cloudcafe/ \
-           --tags "single-deployer,setup_chef,map-b-dns,operator-lp-blue,test-single-deployer,clean-up-single-deployer" \
+           RAX_CREDS_FILE="~/.raxpub ansible all -i inventory/ -m setup"
+           export RAX_CREDS_FILE=~/.raxpub
+
+           ansible-playbook deploy.yml -i inventory/functional/ \
+           --tags "ephemeral-nodes,ephemeral-lb,deploy,test-ephemeral" \
            --private-key ~/.ssh/id_rsa \
-           --extra-vars "b_subdomain=${BranchName}-func-api.cicd.rs-paas.com b_subdomain_record=${BranchName}-func-api.cicd.rs-paas.com region=DFW group_environ=${BranchName}-cloudcafe branch=${TestBranchName} test_suite=${TestSuite}"
+           --extra-vars "workspace=${WORKSPACE} branch=${BranchName} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-pr-functional" || true
 
+           rm -rf repo
+           
+           git clone ssh://git@github.com/dimtruck/workshop_demo.git repo
+           cd repo
+           git checkout ${BranchName}
+           cp ../protractor.conf.js .
+          
+           PATH=/var/lib/jenkins/npm_global/bin:$PATH
+           npm install
+           npm install karma-jenkins-reporter
+           npm install jasmine-reporters
+           bower install
+           npm run update-webdriver
+           webdriver-manager update
+           grunt test:e2e || true
+          
+           cd ..
+
+           ansible-playbook deploy.yml -i inventory/functional/ \
+           --tags "purge" \
+           --private-key ~/.ssh/id_rsa \
+           --extra-vars "branch=${BranchName} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-pr-functional"
            </%text>
 junitArchiver:
-  testResults: "**/results.xml"
+  testResults: "repo/junitresults.xml"
   keepLongStdio: False

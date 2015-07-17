@@ -9,49 +9,56 @@ buildParams:
     paramValue: "master"
     paramDesc:  "Temporary branch name in internal repository"
     paramType: string
-  - paramName: NumberOfWorkers
-    paramValue: 10
-    paramDesc:  "Number of workers per node"
-    paramType: string
-  - paramName: NumberOfDeployers
-    paramValue: 10
-    paramDesc:  "Number of deployers per node"
-    paramType: string
-  - paramName: NumberOfNodes
-    paramValue: 1
-    paramDesc:  "Number of nodes"
-    paramType: string
-  - paramName: UserFile
-    paramValue: "python-java-operator.csv"
-    paramDesc:  "User credentials file"
-    paramType: string
-  - paramName: PropertiesFile
-    paramValue: "1-hour-20-users.properties"
-    paramDesc:  "Test properties file"
-    paramType: string
-  - paramName: Host
-    paramValue: ""
-    paramDesc: "Database host"
-    paramType: string
 scm:
-  gitURL: "ssh://git@github.com/rackerlabs/solum-ansible.git"
+  gitURL: "https://github.com/dimtruck/workshop_deployment"
   gitBranch: "*/master"
-  credentialsId: "9c2111e0-aca4-492a-a0c9-16c8e153ce7c"
   extensions: 
     cleanbeforecheckout: True
 virtualenvBuilder:
   command: |
-           <%text>#!/bin/bash
-           pip install -r ~/ansible-requirements.txt
-           . ~/.profile
-           export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
-           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes'
+           <%text>#!/bin/bash -x
+           rm -rf workshop
+           
+           git clone ssh://git@github.com/dimtruck/workshop_demo.git workshop
+           cd workshop
+           git checkout ${BranchName}
+           cd ..
 
-           # update solum_override_attributes.json
-           python ~/dev_setup_arbor_version.py roles/deploy/files/solum_override_attributes.json ${BranchName} git None
+           pip install -r ansible-requirements.txt
+           echo "127.0.0.1" > ~/ansible_hosts
+
+           export ANSIBLE_HOSTS=~/ansible_hosts
+           export ANSIBLE_LIBRARY=${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/core:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/extras:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/
+
+           export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
+           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes -o ConnectTimeout=60'
+
+           RAX_CREDS_FILE="~/.raxpub ansible all -i inventory/ -m setup"
+           export RAX_CREDS_FILE=~/.raxpub
+           
            ansible-playbook deploy.yml -i inventory/performance/ \
-           --tags "single-deployer,setup_chef,map-b-dns,operator-lp-blue,test-single-deployer,clean-up-single-deployer" \
+           --tags "ephemeral-nodes,ephemeral-lb,deploy,test-performance" \
            --private-key ~/.ssh/id_rsa \
-           --extra-vars "b_subdomain=${BranchName}-performance-api.cicd.rs-paas.com b_subdomain_record=${BranchName}-performance-api.cicd.rs-paas.com region=DFW group_environ=${BranchName}-cloudcafe branch=${TestBranchName} test_suite=${TestSuite}"
+           --extra-vars "workspace=${WORKSPACE} branch=${BranchName} gatling_simulation=workshop.WorkshopTest repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-pr-performance gatling_test_name=WorkshopTest.scala test_package=workshop durationInMinutes=10 throughput=100 rampUpUsers=2 rampUpDuration=10 maxResponseTime=1000 duration_with_wait=660"
+
+           #run gatling
+           #mkdir -p /var/lib/jenkins/gatling/gatling-charts-highcharts-bundle-2.1.3/user-files/simulations/workshop
+           #cp workshop/WorkshopTest.scala /var/lib/jenkins/gatling/gatling-charts-highcharts-bundle-2.1.3/user-files/simulations/workshop/WorkshopTest.scala
+           
+           #cp /var/lib/jenkins/gatling/gatling-charts-highcharts-bundle-2.1.3/user-files/data/opt/workshop.properties /var/lib/jenkins/gatling/gatling-charts-highcharts-bundle-2.1.3/user-files/data/workshop.properties
+           
+           #/var/lib/jenkins/gatling/gatling-charts-highcharts-bundle-2.1.3/bin/gatling.sh -s workshop.WorkshopTest
+          
+
+           ansible-playbook deploy.yml -i inventory/performance/ \
+           --tags "purge" \
+           --private-key ~/.ssh/id_rsa \
+           --extra-vars "branch=${BranchName} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-pr-performance"
+
            </%text>
+shell_build_command: 
+  - build: |
+           #!/bin/bash
+           # run gatling here
+
 gatlingPublisher: True  
