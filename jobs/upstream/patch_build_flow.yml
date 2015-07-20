@@ -40,7 +40,7 @@ buildParams:
     paramType: string
 githubProject: "https://github.com/dimtruck/workshop_demo"
 scm:
-  gitURL: "ssh://dimtruck@23.253.229.56:29418/workshop_demo"
+  gitURL: "ssh://gerrit_user@23.253.229.56:29418/workshop_demo"
   gitBranch: "<%text>$GERRIT_REFSPEC</%text>"
   refSpec: "+refs/pull/*:refs/remotes/origin/pr/*"
   extensions:

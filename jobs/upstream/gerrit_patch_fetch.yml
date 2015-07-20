@@ -5,7 +5,7 @@ job_description: Pulls down public code (OpenStack master) to upstream branch of
 artifactNumToKeep: 10
 buildParams:
   - paramName: GerritRepo
-    paramValue: "ssh://dimtruck@23.253.229.56:29418/workshop_demo"
+    paramValue: "ssh://gerrit_user@23.253.229.56:29418/workshop_demo"
     paramDesc:  Gerrit Solum repository
     paramType: string
   - paramName: GERRIT_REFSPEC
