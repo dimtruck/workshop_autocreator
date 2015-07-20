@@ -1,0 +1,37 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Deploy staging blue nodes
+artifactNumToKeep: 10
+buildParams:
+  - paramName: RELEASE_TAG
+    paramValue: ""
+    paramDesc:  "Release tag"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/dimtruck/workshop_demo.git"
+  gitBranch: "*/master"
+  extensions: 
+    cleanbeforecheckout: True
+virtualenvBuilder:
+  command: |
+           <%text>#!/bin/bash
+           pip install -r ansible-requirements.txt
+           echo "127.0.0.1" > ~/ansible_hosts
+
+           export ANSIBLE_HOSTS=~/ansible_hosts
+           export ANSIBLE_LIBRARY=${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/core:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/extras:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/
+
+           export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
+           ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes -o ConnectTimeout=60'
+
+           RAX_CREDS_FILE="~/.raxpub ansible all -i inventory/ -m setup"
+           export RAX_CREDS_FILE=~/.raxpub
+          
+           #infra setup for blue node
+           ansible-playbook infra_setup_blue.yml -i inventory/production/ \
+           --private-key ~/.ssh/id_rsa --extra-vars "group_environ=production-blue new_count=2" -vvvv
+ 
+           ansible-playbook transition_group.yml -i inventory/production/ \
+           --private-key ~/.ssh/id_rsa --extra-vars "group_environ=production-blue transition_group_environ=production-blue-to-green" -vvvv
+          </%text>

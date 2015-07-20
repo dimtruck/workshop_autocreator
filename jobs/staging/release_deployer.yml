@@ -1,0 +1,34 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+job_description: Deploys release artifact to cloud files
+numOfJobsToKeep: 10
+daysToKeep: 7
+buildParams:
+  - paramName: RELEASE_TAG
+    paramValue: ""
+    paramDesc:  "Release tag"
+    paramType: string
+  - paramName: RELEASE_DESCRIPTION
+    paramValue: ""
+    paramDesc:  "Release description"
+    paramType: string
+scm:
+  gitURL: "ssh://git@github.com/dimtruck/workshop_demo.git"
+  gitBranch: "*/master"
+  extensions: 
+    cleanbeforecheckout: True
+shell_build_command: 
+  - build: |
+           <%text>#!/bin/bash
+           # push the release
+           
+           if ${IS_PRE_RELEASE} ; then
+             ~/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}" -p
+           else
+             ~/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}"
+           fi
+
+           ~/github-release upload -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "workshop_demo-${RELEASE_TAG}" --file workshop_demo-${RELEASE_TAG}.tar.gz
+           git checkout master
+           git push origin -f master:production
+           </%text>

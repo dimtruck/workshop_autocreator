@@ -16,33 +16,3 @@ buildParams:
     paramValue: ""
     paramDesc:  "Build number of flow job."
     paramType: string
-
-shell_build_command:
-  - build: |
-           <%text>
-           if [ "$FlowStep" = "passed" ]; then
-              echo "EMAIL_TITLE=PASSED" > email_values.txt
-              echo "EMAIL_MESSAGE=passed building and testing" >> email_values.txt
-           else
-              echo "EMAIL_TITLE=FAILED" > email_values.txt
-              echo "EMAIL_MESSAGE=failed $FlowStep"  >> email_values.txt
-           fi
-           </%text>
-
-envInjectBuilder: email_values.txt
-extendedMailer:
-  recipientList: "paasteam-dev@lists.rackspace.com"
-  defaultSubject: "Gerrit Patch $EMAIL_TITLE - $GERRIT_CHANGE_SUBJECT"
-  defaultContent: |
-                  <%text>
-
-                  Patch #$GERRIT_PATCHSET_NUMBER of "$GERRIT_CHANGE_SUBJECT" submitted by $GERRIT_CHANGE_OWNER_NAME $EMAIL_MESSAGE. See $FlowBuildNum of gerrit_patch_build_flow for details.
-
-                  $FlowURL/console
-                  $GERRIT_CHANGE_URL
-                  </%text>
-  contentType: "text/plain"
-  attachBuildLog: false
-  always:
-    subject: $PROJECT_DEFAULT_SUBJECT
-    body: $PROJECT_DEFAULT_CONTENT

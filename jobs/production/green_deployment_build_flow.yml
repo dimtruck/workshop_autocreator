@@ -1,0 +1,28 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+
+job_description: Orchestrates the production green node deployment and test
+buildParams:
+  - paramName: RELEASE_TAG
+    paramValue: ""
+    paramDesc:  "Release tag"
+    paramType: string
+artifactNumToKeep: 10
+numOfJobsToKeep: 10
+daysToKeep: 10
+dsl: |
+     guard {
+      if(params.get("RUN_TESTS").equals("true")){
+        green_nodes_deployer = build(params, &quot;production_green_nodes_deployer_with_tests&quot;)
+      } else {
+        green_nodes_deployer = build(params, &quot;production_green_nodes_deployer&quot;)
+      }       
+      
+      out.println green_nodes_deployer.result.name
+      release_deployer_cleanup = build(&quot;production_release_deployer_cleanup&quot;)
+      out.println release_deployer_cleanup.result.name 
+     } rescue {
+       if(green_nodes_deployer.result.name.equals("FAILURE") || green_nodes_deployer.result.name.equals("UNSTABLE")){
+          build( &quot;production_green_nodes_deployer_rescue&quot;)
+       }
+     }

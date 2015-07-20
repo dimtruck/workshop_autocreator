@@ -1,0 +1,32 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+job_description: Orchestrates the staging blue node deployment and test
+artifactNumToKeep: 10
+numOfJobsToKeep: 10
+daysToKeep: 10
+buildParams:
+  - paramName: RELEASE_TAG
+    paramValue: ""
+    paramDesc:  "Release tag"
+    paramType: string
+  - paramName: RELEASE_DESCRIPTION
+    paramValue: ""
+    paramDesc:  "Release description"
+    paramType: string
+  - paramName: RUN_TESTS
+    paramValue: "true"
+    paramDesc:  "Check if you want to run smoke tests."
+    paramType: boolean
+dsl: |
+      guard {
+        if(params.get("RUN_TESTS").equals("true")){
+          blue_nodes_deployer = build(params, "production_blue_nodes_deployer_with_tests")
+        } else {
+          blue_nodes_deployer = build(params, "production_blue_nodes_deployer")
+        }       
+        out.println blue_nodes_deployer.result.name 
+      } rescue {
+        if(blue_nodes_deployer.result.name.equals("FAILURE") || blue_nodes_deployer.result.name.equals("UNSTABLE")){
+          build( "production_blue_nodes_deployer_rescue")
+        }
+      }

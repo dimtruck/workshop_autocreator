@@ -1,30 +1,21 @@
 <%include file="trigger_defaults.yml"/>
 <%include file="default.yml"/>
 
-job_description: Functional tests
-numOfJobsToKeep: 10
-daysToKeep: 7
+job_description: Deploy staging blue nodes
+artifactNumToKeep: 10
 buildParams:
-  - paramName: BranchName
+  - paramName: RELEASE_TAG
     paramValue: ""
-    paramDesc:  "Branch name in Arbor to test against"
-    paramType: string
-  - paramName: TestBranchName
-    paramValue: "master"
-    paramDesc:  "Branch name in CloudCAFE and CloudRoast to use to test"
-    paramType: string
-  - paramName: TestSuite
-    paramValue: "full"
-    paramDesc:  "Test suite file name which specifies which tests to run"
+    paramDesc:  "Release tag"
     paramType: string
 scm:
-  gitURL: "https://github.com/dimtruck/workshop_deployment"
+  gitURL: "ssh://git@github.com/dimtruck/workshop_demo.git"
   gitBranch: "*/master"
   extensions: 
     cleanbeforecheckout: True
 virtualenvBuilder:
   command: |
-           <%text>#!/bin/bash -x
+           <%text>#!/bin/bash
            pip install -r ansible-requirements.txt
            echo "127.0.0.1" > ~/ansible_hosts
 
@@ -37,10 +28,9 @@ virtualenvBuilder:
            RAX_CREDS_FILE="~/.raxpub ansible all -i inventory/ -m setup"
            export RAX_CREDS_FILE=~/.raxpub
 
-           ansible-playbook deploy.yml -i inventory/functional/ \
-           --tags "ephemeral-nodes,ephemeral-lb,deploy,test-ephemeral" \
-           --private-key ~/.ssh/id_rsa \
-           --extra-vars "workspace=${WORKSPACE} branch=${BranchName} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-ge-functional" || true
+           #infra setup for blue node
+           ansible-playbook infra_setup_blue.yml -i inventory/staging/ \
+           --private-key ~/.ssh/id_rsa --extra-vars "group_environ=staging-blue new_count=2"
 
            rm -rf repo
            
@@ -59,12 +49,11 @@ virtualenvBuilder:
            grunt test:e2e || true
           
            cd ..
-
-           ansible-playbook deploy.yml -i inventory/functional/ \
-           --tags "purge" \
-           --private-key ~/.ssh/id_rsa \
-           --extra-vars "branch=${BranchName} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=${BranchName}-ge-functional"
+ 
+           ansible-playbook transition_group.yml -i inventory/staging/ \
+           --private-key ~/.ssh/id_rsa --extra-vars "group_environ=staging-blue transition_group_environ=staging-blue-to-green" -vvvv
            </%text>
 junitArchiver:
-  testResults: "repo/junitresults.xml"
+  testResults: "**/results.xml"
   keepLongStdio: False
+  healthScaleFactor: "1.0"

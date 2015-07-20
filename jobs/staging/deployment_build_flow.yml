@@ -1,0 +1,26 @@
+<%include file="trigger_defaults.yml"/>
+<%include file="default.yml"/>
+job_description: Orchestrates the staging deployment and test
+artifactNumToKeep: 10
+numOfJobsToKeep: 10
+daysToKeep: 10
+buildParams:
+  - paramName: RELEASE_TAG
+    paramValue: ""
+    paramDesc:  "Release tag"
+    paramType: string
+  - paramName: RELEASE_DESCRIPTION
+    paramValue: ""
+    paramDesc:  "Release description"
+    paramType: string
+  - paramName: CUT_NEW_RELEASE
+    paramValue: "true"
+    paramDesc:  "Check if you want to cut a new release (will break if RELEASE TAG already exists)"
+    paramType: boolean
+  - paramName: RUN_TESTS
+    paramValue: "true"
+    paramDesc:  "Check if you want to run smoke tests."
+    paramType: boolean
+dsl: |
+     blue_deployment = build(params, &quot;staging_blue_deployment_build_flow&quot;)
+     green_deployment = build(params, &quot;staging_green_deployment_build_flow&quot;)
