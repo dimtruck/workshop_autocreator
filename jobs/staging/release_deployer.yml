@@ -23,12 +23,10 @@ shell_build_command:
            # push the release
            
            if ${IS_PRE_RELEASE} ; then
-             ~/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}" -p
+             ~/bin/linux/amd64/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}" -p
            else
-             ~/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}"
+             ~/bin/linux/amd64/github-release release -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "${RELEASE_TAG}" -d "${RELEASE_DESCRIPTION}"
            fi
-
-           ~/github-release upload -u dimtruck -r workshop_demo -t v${RELEASE_TAG} -n "workshop_demo-${RELEASE_TAG}" --file workshop_demo-${RELEASE_TAG}.tar.gz
            git checkout master
            git push origin -f master:production
            </%text>
