@@ -41,9 +41,9 @@ shell_build_command:
            git push rackerlabs $gerrit_rackerlabs_branch -f
            echo "gerrit_rackerlabs_branch=$gerrit_rackerlabs_branch" > gerrit_rackerlabs_branch.txt
 
-           rm -rf build
+           rm -rf workshop_build
            git clone https://github.com/dimtruck/workshop_build.git
-           cd build
+           cd workshop_build
            git rev-parse --verify origin/$GERRIT_CHANGE_NUMBER
            if [ $? -eq 0 ]; then
                build_branch=$GERRIT_CHANGE_NUMBER
@@ -51,7 +51,7 @@ shell_build_command:
                build_branch="master"
            fi
            cd ..
-           echo "Using build branch: $build_branch"
+           echo "Using workshop_build branch: $build_branch"
            echo "build_branch=$build_branch" >> gerrit_rackerlabs_branch.txt
 
            </%text>
