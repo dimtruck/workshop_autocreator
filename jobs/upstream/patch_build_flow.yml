@@ -65,10 +65,9 @@ dsl: |
       sha1 = private_build.environment.get(&quot;SHA1&quot;)
       unit_tests = build(&quot;upstream_unit_tests&quot;, BranchName: branch)
       flow_step = "unit testing"
-      parallel ([
-        { build(&quot;upstream_functional_tests&quot;, sha1: sha1, BranchName: branch, TestBranchName:params.get(&quot;GERRIT_CHANGE_NUMBER&quot;)) },
-        { flow_step = "Functional testing" }
-      ])
+      retry ( 3 ) {
+        build(&quot;upstream_functional_tests&quot;, sha1: sha1, BranchName: branch, TestBranchName:params.get(&quot;GERRIT_CHANGE_NUMBER&quot;))
+      }
       flow_step="passed"
      } rescue {
       email_params = params + [FlowStep: flow_step, FlowURL: build.environment.get("BUILD_URL"), FlowBuildNum: build.environment.get("BUILD_DISPLAY_NAME")]
