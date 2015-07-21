@@ -14,14 +14,15 @@ scm:
   gitBranch: "<%text>${BranchName}</%text>"
   extensions: 
     cleanbeforecheckout: True
-blockOnUpstream: True    
-virtualenvBuilder:
-  command: |
+shell_build_command: 
+  - build: |
+           #!/bin/bash
+           PATH=/var/lib/jenkins/npm_global/bin:$PATH
+           npm install
+           npm install karma-jenkins-reporter
+           bower install
            grunt test
 junitArchiver:
   testResults: results.xml
   keepLongStdio: False
   healthScaleFactor: "1.0"
-rubyProxyObject:
-  pipList: "tox&lt;1.7"
-  version: 2.7.6
