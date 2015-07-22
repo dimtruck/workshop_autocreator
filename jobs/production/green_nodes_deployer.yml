@@ -9,7 +9,7 @@ buildParams:
     paramDesc:  "Release tag"
     paramType: string
 scm:
-  gitURL: "ssh://git@github.com/dimtruck/workshop_demo.git"
+  gitURL: "https://github.com/dimtruck/workshop_deployment.git"
   gitBranch: "*/master"
   extensions: 
     cleanbeforecheckout: True
