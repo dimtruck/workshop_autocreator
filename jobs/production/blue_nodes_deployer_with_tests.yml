@@ -29,7 +29,7 @@ virtualenvBuilder:
 
            #infra setup for blue node
            ansible-playbook infra_setup_blue.yml -i inventory/production/ \
-           --private-key ~/.ssh/id_rsa --extra-vars "workspace=${WORKSPACE} branch=${RELEASE_TAG} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=production-blue new_count=2"
+           --private-key ~/.ssh/id_rsa --extra-vars "workspace=${WORKSPACE} branch=v${RELEASE_TAG} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=production-blue new_count=2"
 
            rm -rf repo
            
