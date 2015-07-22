@@ -20,7 +20,6 @@ virtualenvBuilder:
            echo "127.0.0.1" > ~/ansible_hosts
 
            export ANSIBLE_HOSTS=~/ansible_hosts
-           export ANSIBLE_LIBRARY=${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/core:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/modules/extras:${VIRTUAL_ENV}/lib/python2.7/site-packages/ansible/
 
            export ANSIBLE_FORCE_COLOR=true ANSIBLE_HOST_KEY_CHECKING=false \
            ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o ControlMaster=auto -o ControlPersist=60s -o PubkeyAuthentication=yes -o ConnectTimeout=60'
