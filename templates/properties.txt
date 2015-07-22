@@ -10,11 +10,23 @@
         <defaultValue>${buildParam['paramValue']}</defaultValue>
       </hudson.model.StringParameterDefinition>
         % elif buildParam['paramType'] == 'boolean':
-      <hudson.model.StringParameterDefinition>
-        <name>SolumRepoBranch</name>
-        <description>The branch to build from.</description>
-        <defaultValue>master</defaultValue>
-      </hudson.model.StringParameterDefinition>
+      <hudson.model.BooleanParameterDefinition>
+        <name>${buildParam['paramName']}</name>
+        <description>${buildParam['paramDesc']}</description>
+        <defaultValue>${buildParam['paramValue']}</defaultValue>
+      </hudson.model.BooleanParameterDefinition>
+        % elif buildParam['paramType'] == 'choice':
+      <hudson.model.ChoiceParameterDefinition>
+          <name>${buildParam['paramName']}</name>
+          <description></description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+          % for entry in buildParam['paramValues'].split(","):
+              <string>${entry}</string> 
+          % endfor
+            </a>
+          </choices>
+      </hudson.model.ChoiceParameterDefinition>        
         % endif
       % endfor
     </parameterDefinitions>
