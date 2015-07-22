@@ -19,8 +19,6 @@ dsl: |
       }       
       
       out.println green_nodes_deployer.result.name
-      release_deployer_cleanup = build(&quot;production_release_deployer_cleanup&quot;)
-      out.println release_deployer_cleanup.result.name 
      } rescue {
        if(green_nodes_deployer.result.name.equals("FAILURE") || green_nodes_deployer.result.name.equals("UNSTABLE")){
           build( &quot;production_green_nodes_deployer_rescue&quot;)

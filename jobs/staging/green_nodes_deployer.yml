@@ -38,4 +38,7 @@ virtualenvBuilder:
            #transition existing blue nodes to live
            ansible-playbook transition_group.yml -i inventory/staging/ \
            --private-key ~/.ssh/id_rsa --extra-vars "group_environ=staging-blue-to-green transition_group_environ=staging-green" -vvvv
+
+           ansible-playbook rescue_blue.yml -i inventory/staging/ \
+           --private-key ~/.ssh/id_rsa --extra-vars "new_count=2 group_environ=staging-blue" -vvvv
            </%text>
