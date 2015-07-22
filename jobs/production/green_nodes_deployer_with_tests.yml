@@ -35,7 +35,7 @@ virtualenvBuilder:
            
            git clone ssh://git@github.com/dimtruck/workshop_demo.git repo
            cd repo
-           git checkout ${RELEASE_TAG}
+           git checkout v${RELEASE_TAG}
            cp ../protractor.conf.js .
           
            PATH=/var/lib/jenkins/npm_global/bin:$PATH
