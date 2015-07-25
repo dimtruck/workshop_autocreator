@@ -29,7 +29,7 @@ virtualenvBuilder:
           
            #infra setup for blue node
            ansible-playbook infra_setup_blue.yml -i inventory/staging/ \
-           --private-key ~/.ssh/id_rsa --extra-vars "workspace=${WORKSPACE} branch=v${RELEASE_TAG} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=staging-blue new_count=2" -vvvv
+           --private-key ~/.ssh/id_rsa --extra-vars "workspace=${WORKSPACE} branch=v${RELEASE_TAG} repo=ssh://git@github.com/dimtruck/workshop_demo.git group_environ=staging-blue new_count=1" -vvvv
  
            ansible-playbook transition_group.yml -i inventory/staging/ \
            --private-key ~/.ssh/id_rsa --extra-vars "group_environ=staging-blue transition_group_environ=staging-blue-to-green" -vvvv
